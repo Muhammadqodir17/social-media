@@ -1,0 +1,39 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="3">
+            <item index="0" class="java.lang.String" itemvalue="https:" />
+            <item index="1" class="java.lang.String" itemvalue="email" />
+            <item index="2" class="java.lang.String" itemvalue="post.image.url" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="aiogram" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="int.capitalize" />
+          <option value="list.find" />
+          <option value="str.others" />
+          <option value="str.other" />
+          <option value="aiogram.executor.start_polling" />
+          <option value="aiogram.dispatcher.filters" />
+          <option value="int.__setitem__" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
