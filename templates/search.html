@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% if user %}
+    <h2>Results for "{{ search }}"</h2>
+    <ul>
+        {% for users in user %}
+            <li>
+                <a href="/profile/{{ users.user.id }}">
+                    {{ users.user.username }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    {% if search %}
+        <p>No users found for "{{ search }}".</p>
+    {% else %}
+        <p>Please enter a search query.</p>
+    {% endif %}
+{% endif %}
+</body>
+</html>
