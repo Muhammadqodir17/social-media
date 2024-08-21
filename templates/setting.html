@@ -48,14 +48,19 @@
                         <input type="file" name="image" value="" class="shadow-none bg-gray-100">
                     </div>
                     <div class="col-span-2">
+                        <label for=""> Name</label>
+                        <input type="text" name="name" value="{{ user_profile.user.first_name }} {{ user_profile.user.last_name }}"
+                               class="shadow-none bg-gray-100">
+                    </div>
+                    <div class="col-span-2">
+                        <label for=""> Username</label>
+                        <input type="text" name="username" value="{{ user_profile.user.username }}"
+                               class="shadow-none bg-gray-100">
+                    </div>
+                    <div class="col-span-2">
                         <label for="about">Bio</label>
                         <textarea id="about" name="bio" rows="3"
                                   class="shadow-none bg-gray-100">{{ user_profile.bio }}</textarea>
-                    </div>
-                    <div class="col-span-2">
-                        <label for=""> Location</label>
-                        <input type="text" name="location" value="{{ user_profile.location }}"
-                               class="shadow-none bg-gray-100">
                     </div>
                 </div>
 

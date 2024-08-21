@@ -21,12 +21,12 @@
 
 <header>
     <div class="header_inner">
-        <form action="/search" method="POST">
+        <form action="/search" method="get">
         {% csrf_token %}
         <div class="left-side">
             <!-- Logo -->
             <div id="logo" class=" uk-hidden@s">
-                <a href="home.html">
+                <a href="/">
                     <b><h1 style="text-transform: uppercase;">Social Book</h1></b>
                 </a>
             </div>
@@ -36,7 +36,7 @@
             </div>-->
 
             <div class="header_search">&nbsp; &nbsp;
-                <input type="text" name="username" placeholder="Search for username..">
+                <input type="text" name="search" placeholder="Search for username.., " value="{{ search }}">
                 <button type="submit"><i class="fa fa-search fa-1x"></i></button>
                 <div class="icon-search">&nbsp; &nbsp;
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -204,6 +204,7 @@
             </a>
             <div uk-drop="mode: click;offset:9" class="header_dropdown profile_dropdown border-t">
                 <ul>
+                    <li><a href="/profile/{{ user.id }}"> Profile </a></li>
                     <li><a href="/setting"> Account setting </a></li>
                     <li><a href="/auth/logout">Logout</a></li>
                 </ul>
@@ -233,7 +234,7 @@
                                      class="bg-gray-200 border border-white rounded-full w-8 h-8">
                             </div>
                         </a>
-                        <span class="block capitalize font-semibold "><a href="/profile/{{ post.author.user.id }}"0>{{ post.author.user.username }}</a></span>
+                        <span class="block capitalize font-semibold "><a href="/profile/{{ post.author.user.id }}">{{ post.author.user.username }}</a></span>
                     </div>
                     <div>
                         <a href="#"> <i
@@ -261,18 +262,19 @@
 <!--                                        <i class="uil-comment-slash mr-1"></i> Disable comments-->
 <!--                                    </a>-->
 <!--                                </li>-->
-<!--                                <li>-->
-<!--                                    <a href="#"-->
-<!--                                       class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">-->
-<!--                                        <i class="uil-favorite mr-1"></i> Add favorites-->
-<!--                                    </a>-->
-<!--                                </li>-->
+                                <li>
+                                    <a href="#"
+                                       class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
+                                        <i class="uil-favorite mr-1"></i> Add favorites
+                                    </a>
+                                </li>
 <!--                                <li>-->
 <!--                                    <hr class="-mx-2 my-2 ">-->
 <!--                                </li>-->
                                 <li>
-                                    <a href="#"
-                                       class="flex items-center px-3 py-2 text-red-500 hover:bg-red-100 hover:text-red-500 rounded-md ">
+                                    <a href="/delete/{{ post.id }}"
+                                       class="flex items-center px-3 py-2 text-red-500 hover:bg-red-100 hover:text-red-500 rounded-md"
+                                       onclick="return confirm('Are you sure you want to delete this post?');">
                                         <i class="uil-trash-alt mr-1"></i> Delete
                                     </a>
                                 </li>
@@ -724,18 +726,25 @@
                     {% for user in users %}
                     <div class="flex items-center justify-between py-3">
                         <div class="flex flex-1 items-center space-x-4">
-                            <a href="/profile/{{ user.user.username }}">
+                            <a href="/profile/{{ user.user.id }}">
                                 <img src="{{ user.profile_picture.url }}" class="bg-gray-200 rounded-full w-10 h-10">
                             </a>
                             <div class="flex flex-col">
+                                <a href="/profile/{{ user.user.id }}">
                                 <span class="block capitalize font-semibold"> {{ user.user.username }} </span>
+                                </a>
                                 <span class="block capitalize text-sm"> {{ user.follower_count }} </span>
                             </div>
                         </div>
-
-                        <a href="/follow?following_id={{ user.id }}"
+                        {% if user.user.id in followed_user_ids %}
+                            <a href="/follow?following_id={{ user.user.id }}"
+                           class="border border-gray-200 font-semibold px-4 py-1 rounded-full hover:bg-pink-600 hover:text-white hover:border-pink-600 ">
+                            Unfollow </a>
+                        {% else %}
+                            <a href="/follow?following_id={{ user.user.id }}"
                            class="border border-gray-200 font-semibold px-4 py-1 rounded-full hover:bg-pink-600 hover:text-white hover:border-pink-600 ">
                             Follow </a>
+                        {% endif %}
                     </div>
                     {% endfor %}
 

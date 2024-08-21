@@ -1,6 +1,4 @@
 import random
-from itertools import chain
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -11,8 +9,18 @@ from django.contrib import messages, auth
 
 @login_required(login_url='/auth/login')
 def home_view(request):
-    posts = Post.objects.filter(is_published=True)
-    users = MyUser.objects.all()[:4]
+    user = MyUser.objects.filter(user=request.user).first()
+    my_followers = FollowUser.objects.filter(follower=user).values_list('following', flat=True)
+    posts = Post.objects.filter(is_published=True, author__in=my_followers)
+
+    that_followers = MyUser.objects.filter(id__in=my_followers)
+    followers_following = FollowUser.objects.filter(follower__in=that_followers).values_list('following', flat=True)
+    followings_profile = MyUser.objects.filter(id__in=followers_following)
+    random_list_followings_profile = list(followings_profile.all())
+    random.shuffle(random_list_followings_profile)
+
+    followed_user_ids = FollowUser.objects.filter(follower=user).values_list('following__user__id', flat=True)
+
     profile = MyUser.objects.filter(user=request.user).first()
     comments = Comment.objects.all()
     for post in posts:
@@ -24,36 +32,12 @@ def home_view(request):
         obj.save()
         return redirect(f"/#{data['post_id']}")
 
-    # user_following = FollowUser.objects.filter(follower=request.user.username)
-
-    # all_users = User.objects.all()
-    # user_following_all = []
-    #
-    # for user in user_following:
-    #     user_list = User.objects.get(username=user.user)
-    #     user_following_all.append(user_list)
-    #
-    #     new_suggestions_list = [x for x in list(all_users) if (x not in list(user_following_all))]
-    #     current_user = User.objects.filter(username=request.user.username)
-    #     final_suggestions_list = [x for x in list(new_suggestions_list) if (x not in list(current_user))]
-    #     random.shuffle(final_suggestions_list)
-    #
-    #     username_profile = []
-    #     username_profile_list = []
-    #
-    #     for users in final_suggestions_list:
-    #         username_profile.append(users.id)
-    #
-    #     for ids in username_profile:
-    #         profile_list = MyUser.objects.filter(id_user=ids)
-    #         username_profile_list.append(profile_list)
-    #
-    #     suggestions_username_profile_list = list(chain(*username_profile_list))
-
     d = {
         'posts': posts,
-        'users': users,
+        'user': user,
+        'users': random_list_followings_profile[:5],
         'profile': profile,
+        'followed_user_ids': followed_user_ids
     }
 
     return render(request, 'index.html', context=d)
@@ -74,22 +58,32 @@ def upload_view(request):
 
 @login_required(login_url='/auth/login')
 def follow(request):
-    profile_id = request.GET.get('following_id')
-    my_user = MyUser.objects.filter(user=request.user).first()
-    profile = MyUser.objects.filter(id=profile_id).first()
-    follow_exists = FollowUser.objects.filter(follower=my_user, following_id=profile_id)
+    random_following = request.GET.get('following_id')
+    follower = MyUser.objects.filter(user__username=request.POST.get('follower')).first()
+    following = MyUser.objects.filter(user__username=request.POST.get('following')).first()
+    if random_following:
+        follower = MyUser.objects.filter(user__username=request.user).first()
+        following = MyUser.objects.filter(user__id=random_following).first()
 
-    if not follow_exists.exists():
-        obj = FollowUser.objects.create(follower=my_user, following_id=profile_id)
+    follow_exists = FollowUser.objects.filter(follower=follower, following=following)
+
+    if not follow_exists:
+        obj = FollowUser.objects.create(follower=follower, following=following)
         obj.save()
-        profile.follower_count += 1
-        profile.save(update_fields=['follower_count'])
+        follower.following_count += 1
+        following.follower_count += 1
+        follower.save(update_fields=['following_count'])
+        following.save(update_fields=['follower_count'])
 
     else:
+        follower.following_count -= 1
+        following.follower_count -= 1
+        follower.save(update_fields=['following_count'])
+        following.save(update_fields=['follower_count'])
         follow_exists.delete()
-        profile.follower_count -= 1
-        profile.save(update_fields=['follower_count'])
-    return redirect('/')
+    if random_following:
+        return redirect('/')
+    return redirect(f'/profile/{following.user.id}')
 
 
 @login_required(login_url='/auth/login')
@@ -98,6 +92,9 @@ def like(request):
     my_user = MyUser.objects.filter(user=request.user).first()
     my_post = Post.objects.filter(id=post_id).first()
     like_exists = LikePost.objects.filter(author=my_user, post_id=post_id)
+
+    if my_post.author == my_user:
+        return redirect(f'/#{post_id}')
 
     if not like_exists.exists():
         obj = LikePost.objects.create(author=my_user, post_id=post_id)
@@ -109,7 +106,7 @@ def like(request):
         like_exists.delete()
         my_post.like_count -= 1
         my_post.save(update_fields=['like_count'])
-    return redirect('/')
+    return redirect(f'/#{post_id}')
 
 
 def sighup_view(request):
@@ -119,11 +116,11 @@ def sighup_view(request):
         email = request.POST.get('email')
         confirm_password = request.POST.get('confirm_password')
         if password == confirm_password:
-            if User.objects.filter(email=email).exists():
-                messages.info(request, 'Email Taken')
-                return redirect('/signup')
-            elif User.objects.filter(username=username).exists():
-                messages.info(request, 'Username Taken')
+            # if User.objects.filter(email=email).exists():
+            #     messages.info(request, 'Email already Taken')
+            #     return redirect('/signup')
+            if User.objects.filter(username=username).exists():
+                messages.info(request, 'Username already Taken')
                 return redirect('/signup')
             else:
                 user = User.objects.create_user(username=username, email=email, password=password)
@@ -133,8 +130,9 @@ def sighup_view(request):
                 auth.login(request, user_login)
 
                 user_model = User.objects.get(username=username)
-                new_profile = MyUser.objects.create(user=user_model, id_user=user_model.id)
+                new_profile = MyUser.objects.create(user=user_model)
                 new_profile.save()
+                # return render(request, 'setting.html')
                 return redirect('/setting')
         else:
             messages.info(request, 'Password Not Matching')
@@ -146,25 +144,24 @@ def sighup_view(request):
 def settings_view(request):
     user_profile = MyUser.objects.get(user=request.user)
     if request.method == 'POST':
-
         if request.FILES.get('image') is None:
-            image = user_profile.profile_picture
-            bio = request.POST['bio']
-            location = request.POST['location']
-
-            user_profile.profile_picture = image
-            user_profile.bio = bio
-            user_profile.location = location
+            name = request.POST['name'].split()
+            user_profile.user.first_name = name[0]
+            user_profile.user.last_name = name[1]
+            user_profile.user.username = request.POST['username']
+            user_profile.bio = request.POST['bio']
             user_profile.save()
+            user_profile.user.save()
+
         if request.FILES.get('image') is not None:
-            image = request.FILES.get('image')
-            bio = request.POST['bio']
-            location = request.POST['location']
-
-            user_profile.profile_picture = image
-            user_profile.bio = bio
-            user_profile.location = location
+            name = request.POST['name'].split()
+            user_profile.profile_picture = request.FILES.get('image')
+            user_profile.user.first_name = name[0]
+            user_profile.user.last_name = name[1]
+            user_profile.user.username = request.POST['username']
+            user_profile.bio = request.POST['bio']
             user_profile.save()
+            user_profile.user.save()
 
         return redirect('/setting')
 
@@ -173,39 +170,56 @@ def settings_view(request):
 
 @login_required(login_url='/auth/login')
 def profile_view(request, pk):
-    # user_object = User.objects.get(id=pk)
-    # profile_id = request.GET.get('following_id')
-    # profile = MyUser.objects.filter(id=profile_id).first()
+    user = MyUser.objects.filter(user__id=pk).first()
+    follower = MyUser.objects.get(user=request.user)
 
-    # user_profile = MyUser.objects.get(id=user_object)
-    user_posts = Post.objects.filter(id=pk)
+    user_posts = Post.objects.filter(author__user__id=pk)
     length_posts = len(user_posts)
 
-    follower = request.user.username
-    following = pk
+    if FollowUser.objects.filter(follower=follower, following=user).first():
+        button_text = 'Unfollow'
+    else:
+        button_text = 'Follow'
 
-    # if FollowUser.objects.filter(follower=follower, following=following).first():
-    # button_text = 'Unfollow'
+    user_follower = len(FollowUser.objects.filter(following=user))
+    following_user = len(FollowUser.objects.filter(follower=user))
 
-    # else:
-    #     button_text = 'Follow'
-    user_followers = len(FollowUser.objects.filter(following=pk))
-    user_following = len(FollowUser.objects.filter(follower=pk))
     context = {
-        # 'user_object': user_object,
-        # 'user_profile': user_profile,
         'user_posts': user_posts,
+        'user': user,
+        'follower': follower,
         'length_posts': length_posts,
-        # 'button_text': button_text,
-
-        'user_followers': user_followers,
-        'user_following': user_following,
+        'button_text': button_text,
+        'user_follower': user_follower,
+        'following_user': following_user,
     }
-
 
     return render(request, 'profile.html', context)
 
 
 @login_required(login_url='/auth/login')
 def search_view(request):
-    return render(request, 'search.html')
+    search = request.GET.get('search')
+    if search:
+        user = MyUser.objects.filter(user__username__icontains=search)
+        print(user)
+    else:
+        user = MyUser.objects.all()
+
+    context = {
+        'user': user,
+        'search': search
+    }
+
+    return render(request, 'search.html', context)
+
+
+@login_required(login_url='/auth/login')
+def delete_post_view(request, pk):
+    del_post = Post.objects.filter(id=pk).first()
+    del_user = request.user
+
+    if del_post.author.user != del_user:
+        return redirect('/')
+    del_post.delete()
+    return redirect('/')
