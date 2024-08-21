@@ -41,11 +41,10 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Debug: Check if SSH key and known_hosts are set correctly
-          ls -la ~/.ssh
-          cat ~/.ssh/id_rsa
+          # Debug: Print HOST variable
+          echo "HOST: $HOST"
 
-          # Debug: Check if ssh-keyscan works
+          # Check if ssh-keyscan works
           ssh-keyscan -H $HOST || { echo "ssh-keyscan failed"; exit 1; }
 
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
@@ -57,7 +56,7 @@ jobs:
           # Debug: Print environment variables
           echo "Deploying to $HOST"
 
-          # Try to connect to the server to ensure SSH setup is correct
+          # Test SSH connection to verify setup
           ssh -o StrictHostKeyChecking=no root@$HOST 'echo "SSH connection successful"' || { echo "SSH connection failed"; exit 1; }
 
           # Perform deployment commands
