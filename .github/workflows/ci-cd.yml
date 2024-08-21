@@ -24,7 +24,39 @@ jobs:
       - name: Run Tests
         run: |
           python manage.py test
-#
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+
+      - name: Deploy to Development Server
+        env:
+          HOST: ${{ secrets.HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no root@$HOST << 'EOF'
+            set -e
+            cd /root/Muhammadqodir/social-media
+            git pull
+            sudo systemctl restart muhammadqodir_social-media.service
+            sudo systemctl status muhammadqodir_social-media.service
+          EOF
+
+      - name: Send Success Message
+        run: |
+          curl 'https://api.telegram.org/bot6725176067:AAEDuyNZ8Hd_5H6mCqohV38648O7CpOEj3s/sendMessage?chat_id=-1002048118873&text=Successful Deployment'
 #  deploy:
 #    runs-on: ubuntu-latest
 #    needs: build
@@ -53,37 +85,3 @@ jobs:
 #      - name: Send Success Message
 #        run: |
 #          curl 'https://api.telegram.org/bot6725176067:AAEDuyNZ8Hd_5H6mCqohV38648O7CpOEj3s/sendMessage?chat_id=-1002048118873&text=Successful Deployment'
-
-deploy:
-  runs-on: ubuntu-latest
-  needs: build
-
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Set up SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: ${{ secrets.HOST }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
-
-    - name: Deploy to Development Server
-      env:
-        HOST: ${{ secrets.HOST }}
-      run: |
-        ssh -o StrictHostKeyChecking=no root@$HOST << 'EOF'
-          set -e
-          cd /root/Muhammadqodir/social-media
-          git pull
-          sudo systemctl restart muhammadqodir_social-media.service
-          sudo systemctl status muhammadqodir_social-media.service
-        EOF
-
-    - name: Send Success Message
-      run: |
-        curl 'https://api.telegram.org/bot6725176067:AAEDuyNZ8Hd_5H6mCqohV38648O7CpOEj3s/sendMessage?chat_id=-1002048118873&text=Successful Deployment'
