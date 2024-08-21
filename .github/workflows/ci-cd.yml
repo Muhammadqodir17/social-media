@@ -44,10 +44,10 @@ jobs:
 
           ssh -tt root@$HOST << 'EOF'
             set -e
-            cd /root/CRM_BACKEND/fsp-crm-backend
+            cd /root/Muhammadqodir/social-media
             git pull
-            sudo systemctl restart cr_m.service
-            sudo systemctl status cr_m.service
+            sudo systemctl restart muhammadqodir_social-media.service
+            sudo systemctl status muhammadqodir_social-media.service
           EOF
 
       - name: Send Success Message
