@@ -35,39 +35,20 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           HOST: ${{ secrets.HOST }}
         run: |
-          echo "${SSH_PRIVATE_KEY}" > ssh_key
+#          echo "${SSH_PRIVATE_KEY}" > ssh_key
           chmod 600 ssh_key
 
           mkdir -p ~/.ssh
           cp ssh_key ~/.ssh/id_rsa
-
-          echo "Retrieving host key..."
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
-          echo "Known hosts:"
-          cat ~/.ssh/known_hosts
 
-          echo "Connecting to server..."
-          ssh -tt -v root@$HOST << 'EOF'
+          ssh -tt root@$HOST << 'EOF'
             set -e
             cd /root/Muhammadqodir/social-media
             git pull
             sudo systemctl restart muhammadqodir_social-media.service
             sudo systemctl status muhammadqodir_social-media.service
           EOF
-#          echo "${SSH_PRIVATE_KEY}" > ssh_key
-#          chmod 600 ssh_key
-#
-#          mkdir -p ~/.ssh
-#          cp ssh_key ~/.ssh/id_rsa
-#          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
-#
-#          ssh -tt root@$HOST << 'EOF'
-#            set -e
-#            cd /root/Muhammadqodir/social-media
-#            git pull
-#            sudo systemctl restart muhammadqodir_social-media.service
-#            sudo systemctl status muhammadqodir_social-media.service
-#          EOF
 
       - name: Send Success Message
         run: |
