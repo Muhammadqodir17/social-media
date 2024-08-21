@@ -40,12 +40,27 @@ jobs:
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+          # Debug: Check if SSH key and known_hosts are set correctly
+          ls -la ~/.ssh
+          cat ~/.ssh/id_rsa
+
+          # Debug: Check if ssh-keyscan works
+          ssh-keyscan -H $HOST || { echo "ssh-keyscan failed"; exit 1; }
+
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
 
       - name: Deploy to Development Server
         env:
           HOST: ${{ secrets.HOST }}
         run: |
+          # Debug: Print environment variables
+          echo "Deploying to $HOST"
+
+          # Try to connect to the server to ensure SSH setup is correct
+          ssh -o StrictHostKeyChecking=no root@$HOST 'echo "SSH connection successful"' || { echo "SSH connection failed"; exit 1; }
+
+          # Perform deployment commands
           ssh -o StrictHostKeyChecking=no root@$HOST << 'EOF'
             set -e
             cd /root/Muhammadqodir/social-media
