@@ -22,9 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-39wd9@*ze&c$!c+1fn2x%n=x@=)6i$i0i%nu@4e+#zu319^=%a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
 
 # Application definition
 
@@ -47,7 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'blog.middleware.CacheResponseMiddleware',
+    # 'blog.middleware.CacheResponseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -139,12 +140,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # settings.py
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': 'unique-snowflake',
+#     }
+# }
 
 # AWS_ACCESS_KEY_ID = 'DO00FMHAKFCE6LRAEZCW'
 # AWS_SECRET_ACCESS_KEY = 'ItiX5qd62nXLki+vL8bZTfXBvJxdlN59pZv0d1yGOA4'
@@ -155,4 +156,3 @@ CACHES = {
 # # AWS_DEFAULT_ACL = None
 # # AWS_S3_VERITY = True
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-

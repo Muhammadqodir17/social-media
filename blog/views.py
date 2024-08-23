@@ -47,7 +47,6 @@ def home_view(request):
 def upload_view(request):
     if request.method == 'POST':
         profile = MyUser.objects.filter(user=request.user).first()
-        # profile = request.user.username
         image = request.FILES.get('image_upload')
         obj = Post.objects.create(author=profile, image=image)
         obj.save()
@@ -132,7 +131,6 @@ def sighup_view(request):
                 user_model = User.objects.get(username=username)
                 new_profile = MyUser.objects.create(user=user_model)
                 new_profile.save()
-                # return render(request, 'setting.html')
                 return redirect('/setting')
         else:
             messages.info(request, 'Password Not Matching')
@@ -143,21 +141,20 @@ def sighup_view(request):
 @login_required(login_url='/auth/login')
 def settings_view(request):
     user_profile = MyUser.objects.get(user=request.user)
+
     if request.method == 'POST':
         if request.FILES.get('image') is None:
-            name = request.POST['name'].split()
-            user_profile.user.first_name = name[0]
-            user_profile.user.last_name = name[1]
+            name = request.POST['name']
+            user_profile.user.first_name = name
             user_profile.user.username = request.POST['username']
             user_profile.bio = request.POST['bio']
             user_profile.save()
             user_profile.user.save()
 
         if request.FILES.get('image') is not None:
-            name = request.POST['name'].split()
+            name = request.POST['name']
             user_profile.profile_picture = request.FILES.get('image')
-            user_profile.user.first_name = name[0]
-            user_profile.user.last_name = name[1]
+            user_profile.user.first_name = name
             user_profile.user.username = request.POST['username']
             user_profile.bio = request.POST['bio']
             user_profile.save()

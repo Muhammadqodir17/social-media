@@ -307,7 +307,7 @@
                                 {% endif%}
                             </div>
                         </a>
-<!--                        <a href="#" class="flex items-center space-x-2">-->
+<!--                        <a href="#" class="flex items space-x-2">-->
 <!--                            <div class="p-2 rounded-full text-black">-->
 <!--                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"-->
 <!--                                     width="25" height="25" class="">-->
@@ -317,7 +317,7 @@
 <!--                                </svg>-->
 <!--                            </div>-->
 
-                        </a>
+<!--                        </a>-->
                         <a href="{{  post.image.url }}" class="flex items-center space-x-2 flex-1 justify-end" download>
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                                  aria-hidden="true" role="img" width="25" height="25"
@@ -349,12 +349,15 @@
                     <div class="border-t pt-4 space-y-4 ">
                         {% for comment in post.comments %}
                         <div class="flex">
-                            <div class="w-10 h-10 rounded-full relative flex-shrink-0">
-                                <img src="{{ comment.author.profile_picture.url }}" alt=""
-                                     class="absolute h-full rounded-full w-full">
-                            </div>
+                            <a href="/profile/{{ comment.author.user.id }}">
+                                <div class="w-10 h-10 rounded-full relative flex-shrink-0">
+                                    <img src="{{ comment.author.profile_picture.url }}" alt=""
+                                        class="absolute h-full rounded-full w-full">
+                                </div>
+                            </a>
                             <div class="text-gray-700 py-2 px-3 rounded-md bg-gray-100 h-full relative lg:ml-5 ml-2 lg:mr-20   ">
-                                <p class="leading-6">{{ comment.message }}
+                                <a href="/profile/{{ comment.author.user.id }}"><p class="text-sm text-gray-500 mt-1">{{ comment.author.user.username }}</p></a>
+                                <p class="leading-6">{{ comment.message }}</p>
 <!--                                    <urna class="i uil-heart"></urna>-->
 <!--                                    <i-->
 <!--                                            class="uil-grin-tongue-wink"> </i></p>-->
